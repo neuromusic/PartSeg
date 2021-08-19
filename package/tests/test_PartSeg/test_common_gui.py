@@ -105,6 +105,7 @@ class TestAddFiles:
 
         widget = select_multiple_files.AddFiles(part_settings)
         qtbot.addWidget(widget)
+        (tmp_path / "aaa").mkdir()
         widget.paths_input.setText(str(tmp_path / "aaa"))
         widget.parse_drop_file_list(name_list)
         assert mock_warning[0] == 1
