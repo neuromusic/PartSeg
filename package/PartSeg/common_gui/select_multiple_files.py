@@ -145,6 +145,18 @@ class AddFiles(QWidget):
             event.acceptProposedAction()
 
     def dropEvent(self, event: QDropEvent):
+        import sentry_sdk
+
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("group", "magalska")
+            scope.set_context(
+                "text",
+                {
+                    "text": repr(event.mimeData().text()),
+                    "urls": event.mimeData().urls(),
+                },
+            )
+            sentry_sdk.capture_message("files data ")
         files_list = event.mimeData().text().split()
         self.parse_drop_file_list(files_list)
 
@@ -168,9 +180,15 @@ class AddFiles(QWidget):
                         "base path": base_path,
                         "missed_files": missed_files,
                         "files list": files_list,
-                        "base dir content": os.listdir(base_path),
                     },
                 )
+                if base_path:
+                    scope.set_context(
+                        "meta information",
+                        {
+                            "base dir content": os.listdir(base_path),
+                        },
+                    )
                 sentry_sdk.capture_message("problem")
             if len(missed_files) > 6:
                 missed_files = missed_files[:6] + ["..."]
