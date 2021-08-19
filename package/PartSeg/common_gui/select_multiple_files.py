@@ -158,6 +158,20 @@ class AddFiles(QWidget):
                 res_list.append(os.path.join(base_path, file_path))
         missed_files = [x for x in res_list if not os.path.exists(x)]
         if missed_files:
+            import sentry_sdk
+
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("group", "magalska")
+                scope.set_context(
+                    "variables",
+                    {
+                        "base path": base_path,
+                        "missed_files": missed_files,
+                        "files list": files_list,
+                        "base dir content": os.listdir(base_path),
+                    },
+                )
+                sentry_sdk.capture_message("problem")
             if len(missed_files) > 6:
                 missed_files = missed_files[:6] + ["..."]
             missed_files_str = "<br>".join(missed_files)
